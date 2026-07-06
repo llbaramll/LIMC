@@ -1,0 +1,43 @@
+name: Android LIMC AAB Build
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch: # 마우스 클릭으로도 빌드를 켤 수 있게 하는 옵션
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 소스코드 가져오기
+      uses: actions/checkout@v4
+
+    - name: 자바 환경 설정 (JDK 17)
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        cache: 'gradle'
+
+    - name: 구글 출시용 서명키(Keystore) 자동 생성
+      run: |
+        keytool -genkeypair -v -keystore app/my-release-key.jks -alias mobilelimc-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass "limc1234!" -keypass "limc1234!" -dname "CN=LIMC, OU=Mobile, O=LIMC, L=Seoul, S=Seoul, C=KR"
+
+    - name: Gradle Wrapper 실행 권한 부여
+      run: |
+        # gradlew 파일이 없을 경우를 대비해 표준 Wrapper 생성 및 권한 부여
+        gradle wrapper --gradle-version 8.2.2
+        chmod +x ./gradlew
+
+    - name: 구글 출시용 AAB 파일 빌드
+      run: ./gradlew bundleRelease
+      env:
+        # 빌드 시 방금 생성한 키 정보 연결
+        GRADLE_OPTS: "-Dorg.gradle.project.android.injected.signing.store.file=my-release-key.jks -Dorg.gradle.project.android.injected.signing.store.password=limc1234! -Dorg.gradle.project.android.injected.signing.key.alias=mobilelimc-alias -Dorg.gradle.project.android.injected.signing.key.password=limc1234!"
+
+    - name: 완성된 AAB 파일 저장 및 배포
+      uses: actions/upload-artifact@v4
+      with:
+        name: LIMC-Release-AAB
+        path: app/build/outputs/bundle/release/*.aab
