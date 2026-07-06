@@ -28,12 +28,12 @@ jobs:
     - name: Gradle 환경 자동 세팅
       uses: gradle/actions/setup-gradle@v4
       with:
-        gradle-version: '8.2' # 인식 가능한 공식 버전 명칭으로 변경했습니다.
+        gradle-version: '8.2'
 
     - name: 구글 출시용 AAB 파일 빌드
       run: gradle bundleRelease
       env:
-        GRADLE_OPTS: "-Dorg.gradle.project.android.injected.signing.store.file=my-release-key.jks -Dorg.gradle.project.android.injected.signing.store.password=limc1234! -Dorg.gradle.project.android.injected.signing.key.alias=mobilelimc-alias -Dorg.gradle.project.android.injected.signing.key.password=limc1234!"
+        GRADLE_OPTS: "-Dorg.gradle.project.android.injected.signing.store.file=${{ github.workspace }}/app/my-release-key.jks -Dorg.gradle.project.android.injected.signing.store.password=limc1234! -Dorg.gradle.project.android.injected.signing.key.alias=mobilelimc-alias -Dorg.gradle.project.android.injected.signing.key.password=limc1234!"
 
     - name: 완성된 AAB 파일 저장 및 배포
       uses: actions/upload-artifact@v4
