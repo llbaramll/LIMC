@@ -20,9 +20,13 @@ jobs:
         java-version: '17'
         cache: 'gradle'
 
-    - name: 구글 출시용 서명키(Keystore) 자동 생성
+- name: 구글 출시용 서명키(Keystore) 자동 생성
       run: |
-        keytool -genkeypair -v -keystore app/my-release-key.jks -alias mobilelimc-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass "limc1234!" -keypass "limc1234!" -dname "CN=LIMC, OU=Mobile, O=LIMC, L=Seoul, S=Seoul, C=KR"
+        # app 폴더가 없으면 미리 생성
+        mkdir -p app
+        # 서명키 생성 실행
+        keytool -genkeypair -v -keystore app/my-release-key.jks -alias mobilelimc-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass "limc1234!" -keypass "limc1234!" -dname "CN=LIMC, OU=Mobile, O=LIMC, L=Seoul, ST=Seoul, C=KR"
+
 
     - name: Gradle Wrapper 실행 권한 부여
       run: |
