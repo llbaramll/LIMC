@@ -1,45 +1,51 @@
-plugins {
-    id 'com.android.application'
-}
+name: Android LIMC Build
 
-android {
-    namespace 'com.mobilelimc.limcv10'
-    compileSdk 34
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
-    // 1. 서명 설정을 가장 먼저 정의합니다.
-    signingConfigs {
-        release {
-            storeFile file("my-release-key.jks")
-            storePassword "limc1234!"
-            keyAlias "mobilelimc-alias"
-            keyPassword "limc1234!"
-        }
-    }
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-    defaultConfig {
-        applicationId "com.mobilelimc.limcv10"
-        minSdk 24
-        targetSdk 34
-        versionCode 1
-        versionName "1.0"
-    }
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    buildTypes {
-        release {
-            minifyEnabled false
-            // 2. 릴리즈 빌드할 때 위에서 정의한 서명(release)을 반드시 쓰도록 강제 연결합니다.
-            signingConfig signingConfigs.release 
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        }
-    }
-    
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
-    }
-}
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+          cache: 'gradle'
 
-dependencies {
-    implementation 'androidx.appcompat:appcompat:1.6.1'
-    implementation 'com.google.android.material:material:1.11.0'
-}
+      - name: Create app directory
+        run: mkdir -p app
+
+      - name: Generate Keystore
+        run: keytool -genkeypair -v -keystore app/my-release-key.jks -alias mobilelimc-alias -keyalg RSA -keysize 2048 -validity 10000 -storepass "limc1234!" -keypass "limc1234!" -dname "CN=LIMC, OU=Mobile, O=LIMC, L=Seoul, ST=Seoul, C=KR"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.2'
+
+      - name: Build Google Play AAB
+        run: gradle bundleRelease
+
+      - name: Build Test Phone APK
+        run: gradle assembleRelease
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: LIMC-Release-AAB
+          path: app/build/outputs/bundle/release/*.aab
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LIMC-Test-APK
+          path: app/build/outputs/apk/release/*.apk
