@@ -6,6 +6,15 @@ android {
     namespace 'com.mobilelimc.limcv10'
     compileSdk 34
 
+    signingConfigs {
+        release {
+            storeFile file("my-release-key.jks")
+            storePassword "limc1234!"
+            keyAlias "mobilelimc-alias"
+            keyPassword "limc1234!"
+        }
+    }
+
     defaultConfig {
         applicationId "com.mobilelimc.limcv10"
         minSdk 24
@@ -17,9 +26,11 @@ android {
     buildTypes {
         release {
             minifyEnabled false
+            signingConfig signingConfigs.release 
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
