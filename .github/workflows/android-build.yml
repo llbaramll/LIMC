@@ -30,15 +30,8 @@ jobs:
       with:
         gradle-version: '8.2'
 
-    - name: 구글 출시용 AAB 파일 빌드
-      run: gradle bundleRelease
-      env:
-        GRADLE_OPTS: "-Dorg.gradle.project.android.injected.signing.store.file=${{ github.workspace }}/app/my-release-key.jks -Dorg.gradle.project.android.injected.signing.store.password=limc1234! -Dorg.gradle.project.android.injected.signing.key.alias=mobilelimc-alias -Dorg.gradle.project.android.injected.signing.key.password=limc1234!"
-
-    - name: 스마트폰 테스트용 APK 파일 빌드
-      run: gradle assembleRelease
-      env:
-        GRADLE_OPTS: "-Dorg.gradle.project.android.injected.signing.store.file=${{ github.workspace }}/app/my-release-key.jks -Dorg.gradle.project.android.injected.signing.store.password=limc1234! -Dorg.gradle.project.android.injected.signing.key.alias=mobilelimc-alias -Dorg.gradle.project.android.injected.signing.key.password=limc1234!"
+    - name: 출시용 AAB 및 테스트용 APK 동시 빌드
+      run: gradle bundleRelease assembleRelease
 
     - name: [출시용] AAB 파일 저장
       uses: actions/upload-artifact@v4
