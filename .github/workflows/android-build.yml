@@ -45,4 +45,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: LIMC-Test-APK
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/release/app-release.apk # 찌꺼기 파일 제외하고 이 진짜 파일 딱 하나만 저장하도록 경로를 교정했습니다!
